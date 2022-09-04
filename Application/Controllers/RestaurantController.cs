@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ObjectClasses;
 
+
 namespace Application.Controllers
 {
     [Route("api/[controller]/[action]")]
@@ -74,22 +75,7 @@ namespace Application.Controllers
             return new ResultViewModel() { IsSuccess = true, Message = "Reference successfully added" };
         }
 
-        [HttpGet]
-        public ResultViewModel ClaimMeal(int id)
-        {
-
-            var user = _context.Employees.Where(s => s.Id == id).FirstOrDefault();
-            if (user != null && user.IsEligible && !user.IsExpired)
-            {
-                user.IsExpired = true;
-                user.MealsClaimed++;
-                user.LastClaimed = DateTime.Now;
-                _context.SaveChanges();
-                return new ResultViewModel() { IsSuccess = true, Message = "Meal successgully claimed", IdOfUser = user.Id };
-            }
-            return null;
-
-        }
+        
 
         [HttpPost]
         public ResultViewModel Register(Employee model)

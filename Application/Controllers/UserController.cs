@@ -35,18 +35,31 @@ namespace Application.Controllers
 
         [HttpGet]
 
-        public async Task<ActionResult> GenerateQRCode(int id)
+        public async Task<ActionResult> ClaimMeal(int id)
         {
             var user = _context.Employees.Where(s => s.Id == id).FirstOrDefault();
             if (user.UserName.Equals("1DayRef") || user.UserName.Equals("1WeekRef"))
                 return null;
-            QRCodeGenerator _qr = new QRCodeGenerator();
-            QRCodeData _qrData = _qr.CreateQrCode(DateTime.Now + "_" + user.Id + "_" + user.Name + "_" + user.Department + "_" + user.MealType, QRCodeGenerator.ECCLevel.Q);
-            QRCode qrCode = new QRCode(_qrData);
-            Image qrCodeImage = qrCode.GetGraphic(20);
+            var tmp = _context.Employees.Where(s => s.Id == id).FirstOrDefault();
+            if (tmp != null && user.IsEligible && !user.IsExpired)
+            {
+                tmp.IsExpired = true;
+                tmp.MealsClaimed++;
+                tmp.LastClaimed = DateTime.Now;
+                _context.SaveChanges();
 
-            var bytes = ImageToByteArray(qrCodeImage);
-            return File(bytes, "image/bmp"); 
+                QRCodeGenerator _qr = new QRCodeGenerator();
+                QRCodeData _qrData = _qr.CreateQrCode(DateTime.Now + "_" + tmp.Id + "_" + tmp.Name + "_" + tmp.Department + "_" + tmp.MealType, QRCodeGenerator.ECCLevel.Q);
+                QRCode qrCode = new QRCode(_qrData);
+                Image qrCodeImage = qrCode.GetGraphic(20);
+
+                var bytes = ImageToByteArray(qrCodeImage);
+                return File(bytes, "image/bmp");
+
+            }
+            
+            return null;
+            
 
         }
 
